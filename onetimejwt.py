@@ -21,7 +21,8 @@ Server side, create a single instance of Manager and use it for all threads:
     import onetimejwt
 
     # at startup, creates a cleanup thread
-    JTM = onetimejwt.Manager(maxage=60)
+    # note: you can include any number of secrets
+    JTM = onetimejwt.Manager('shared secret', maxage=60)
 
     JTM.housekeeper()
 
@@ -95,7 +96,7 @@ class Manager(object):
 
     def __init__(self, *secrets, **kwargs):
         self.age = kwargs.get('age', 60)
-        self.secrets = secrets
+        self.secrets = list(secrets)
         timeinterval.start(self.age * 1000, self._clean)
 
     @mutex
