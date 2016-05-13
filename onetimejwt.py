@@ -103,11 +103,8 @@ class Manager(object):
     def _clean(self):
         """Run by housekeeper thread"""
         now = time.time()
-        print("Cleaning")
-        print(self.jwts)
         for j in self.jwts:
             if (now - self.jwts[j]) > (self.age*2):
-                print("remove " + j)
                 del self.jwts[j]
 
     @mutex
