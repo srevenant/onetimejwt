@@ -24,13 +24,21 @@ Server side, create a single instance of Manager and use it for all threads:
     # note: you can include any number of secrets
     JTM = onetimejwt.Manager('shared secret', maxage=60)
 
-    JTM.housekeeper()
-
     # during processing -- throws JwtFailed exception if not authorized
     JTM.valid(headers.get('Authorization'))
 
 Manager will keep a list of recognized JWTS, and uses logging of a warning level
 to report problems.
+
+You can store the secret in base64 format for full binary spectrum of random
+data.  If you do this, begin the secret with 'base64:...' and Manager init will
+properly handler it.  generate, however, does not pay attention to this--
+for performance purposes it assumes you give it the final form of the secret.
+
+To pre-process the secret for generate, call:
+
+    decoded_secret = threading.decode_secret("base64:bm90IHJlYWxseSBiaW5hcnk=")
+    jwt = onetimejwt.generate(decoded_secret, 60)
 
 ------------------------------------------------------------------
 
@@ -52,6 +60,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import threading
+import base64
 import uuid
 import time
 import jwt
@@ -59,10 +68,19 @@ import timeinterval # look elsewhere for this module
 
 __version__ = 1.0
 
+def decode_secret(secret):
+    """Allow for base64 encoding of binary secret data--greater entropy"""
+    if secret[:6] == "base64":
+        return base64.b64decode(secret[7:])
+    else:
+        return secret
+    
+
 def generate(secret, age):
     """Generate a one-time jwt with an age in seconds"""
     jti = str(uuid.uuid1()) # random id
-    return jwt.encode({'exp':int(time.time() + age), 'jti':jti}, secret)
+    return jwt.encode({'exp':int(time.time() + age), 'jti':jti},
+                      decode_secret(secret))
 
 def mutex(func):
     """use a thread lock on current method, if self.lock is defined"""
@@ -86,7 +104,6 @@ class JwtFailed(Exception):
 class Manager(object):
     """
     Threadsafe mechanism to have one-time jwts.
-
     """
 
     secrets = []
@@ -96,7 +113,8 @@ class Manager(object):
 
     def __init__(self, *secrets, **kwargs):
         self.age = kwargs.get('age', 60)
-        self.secrets = list(secrets)
+        for secret in secrets:
+            self.secrets.append(decode_secret(secret))
         timeinterval.start(self.age * 1000, self._clean)
 
     @mutex
