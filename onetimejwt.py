@@ -65,6 +65,7 @@ import uuid
 import time
 import jwt
 import timeinterval # look elsewhere for this module
+#import logging
 
 __version__ = 1.0
 
@@ -121,9 +122,9 @@ class Manager(object):
     def _clean(self):
         """Run by housekeeper thread"""
         now = time.time()
-        for j in self.jwts.keys():
-            if (now - self.jwts[j]) > (self.age*2):
-                del self.jwts[j]
+        for jwt in self.jwts.keys():
+            if (now - self.jwts[jwt]) > (self.age * 2):
+                del self.jwts[jwt]
 
     @mutex
     def already_used(self, tok):
