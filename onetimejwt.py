@@ -77,11 +77,14 @@ def decode_secret(secret):
         return secret
     
 
-def generate(secret, age):
+def generate(secret, age, **payload):
     """Generate a one-time jwt with an age in seconds"""
     jti = str(uuid.uuid1()) # random id
-    return jwt.encode({'exp':int(time.time() + age), 'jti':jti},
-                      decode_secret(secret))
+    if not payload:
+        payload = {}
+    payload['exp'] = int(time.time() + age)
+    payload['jti'] = jti
+    return jwt.encode(payload, decode_secret(secret))
 
 def mutex(func):
     """use a thread lock on current method, if self.lock is defined"""
@@ -141,6 +144,7 @@ class Manager(object):
         if 'Bearer ' in token:
             token = token[7:]
 
+        data = None
         for secret in self.secrets:
             try:
                 data = jwt.decode(token, secret)
