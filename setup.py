@@ -4,13 +4,13 @@ setup(
   name = 'onetimejwt',
   packages = ['onetimejwt'],
   version = '1.0',
+  install_requires = ['jwt', 'timeinterval'],
   description = 'Simple one time jwt - server and client bits',
   author = 'Brandon Gillespie',
   author_email = 'bjg-pypi@solv.com',
   url = 'https://github.com/srevenant/onetimejwt', 
   download_url = 'https://github.com/srevenant/onetimejwt/tarball/1.0',
   keywords = ['jwt', 'api', 'auth'],
-  install_requires = ['jwt', 'timeinterval'],
   classifiers = [],
 )
 
