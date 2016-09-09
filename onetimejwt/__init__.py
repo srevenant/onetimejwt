@@ -171,6 +171,6 @@ class Manager(object):
         if self.already_used(jti):
             raise JwtFailed("Jwt re-use disallowed (jti={})".format(jti))
 
-        return True
+        return data
 
 
